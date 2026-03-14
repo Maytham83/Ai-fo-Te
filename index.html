@@ -61,7 +61,7 @@ img{max-width:100%;}
 /* ══════════════════════════════════════════
    TOP NAV BAR
 ══════════════════════════════════════════ */
-.topnav{
+.topnav{transition:top .3s;
   position:fixed;top:0;right:0;left:0;z-index:200;
   height:var(--nav-h);
   background:rgba(7,9,15,.97);
@@ -657,6 +657,26 @@ footer{background:var(--ink);}
 /* ══════════════════════════════════════════
    VISITOR COUNTER WIDGET
 ══════════════════════════════════════════ */
+
+/* ── SETUP BANNER ── */
+.setup-banner{
+  position:fixed;top:var(--nav-h);right:0;left:0;z-index:180;
+  background:linear-gradient(90deg,#7c2d12,#9a3412);
+  border-bottom:2px solid #fb923c;
+  padding:10px 20px;
+  display:flex;align-items:center;justify-content:space-between;
+  gap:12px;flex-wrap:wrap;
+  font-size:12px;color:#fff;
+  transition:all .3s;
+}
+.setup-banner.hidden{display:none;}
+.setup-banner b{color:#fbbf24;}
+.setup-banner-close{background:rgba(255,255,255,.2);border:none;color:#fff;
+  border-radius:8px;padding:4px 12px;cursor:pointer;font-size:11px;
+  font-family:"Cairo",sans-serif;transition:background .2s;white-space:nowrap;}
+.setup-banner-close:hover{background:rgba(255,255,255,.35);}
+.setup-banner a{color:#fbbf24;text-decoration:underline;}
+
 .visitor-bar{
   position:fixed;bottom:0;right:0;left:0;z-index:160;
   background:rgba(7,9,15,.92);
@@ -771,7 +791,27 @@ footer{background:var(--ink);}
 @media(max-width:480px){
   .modal-box{padding:28px 20px 20px;}
   .form-row{grid-template-columns:1fr;}
-  .visitor-bar{padding:8px 12px;gap:10px;}
+  
+/* ── SETUP BANNER ── */
+.setup-banner{
+  position:fixed;top:var(--nav-h);right:0;left:0;z-index:180;
+  background:linear-gradient(90deg,#7c2d12,#9a3412);
+  border-bottom:2px solid #fb923c;
+  padding:10px 20px;
+  display:flex;align-items:center;justify-content:space-between;
+  gap:12px;flex-wrap:wrap;
+  font-size:12px;color:#fff;
+  transition:all .3s;
+}
+.setup-banner.hidden{display:none;}
+.setup-banner b{color:#fbbf24;}
+.setup-banner-close{background:rgba(255,255,255,.2);border:none;color:#fff;
+  border-radius:8px;padding:4px 12px;cursor:pointer;font-size:11px;
+  font-family:"Cairo",sans-serif;transition:background .2s;white-space:nowrap;}
+.setup-banner-close:hover{background:rgba(255,255,255,.35);}
+.setup-banner a{color:#fbbf24;text-decoration:underline;}
+
+.visitor-bar{padding:8px 12px;gap:10px;}
 }
 
 </style>
@@ -780,6 +820,12 @@ footer{background:var(--ink);}
 <body>
 
 <!-- ═══════════ TOP NAV ═══════════ -->
+
+<!-- ══════════ SETUP BANNER ══════════ -->
+<div class="setup-banner" id="setupBanner">
+  <span>⚙️ لتفعيل نموذج التواصل: اذهب إلى <a href="https://web3forms.com" target="_blank">web3forms.com</a> ← أدخل إيميلك ← انسخ الـ Access Key ← افتح الملف وابحث عن <b>W3F_KEY</b> وضع المفتاح</span>
+  <button class="setup-banner-close" onclick="document.getElementById('setupBanner').classList.add('hidden');localStorage.setItem('sb_closed','1')">فهمت ✓</button>
+</div>
 
 <!-- ══════════ VISITOR COUNTER BAR ══════════ -->
 <div class="visitor-bar" id="visitorBar">
@@ -839,7 +885,7 @@ footer{background:var(--ink);}
     </button>
     <div class="form-status" id="cf-status"></div>
     <div class="form-footer-note">
-      📧 يتم الإرسال إلى: Engmkm2023@gmail.com<br>
+      📧 يتم الإرسال إلى: <a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="460328212b2d2b7476747506212b272f2a6825292b">[email&#160;protected]</a><br>
       🔒 بياناتك محفوظة ولن تُشارك مع أي جهة
     </div>
   </div>
@@ -1471,242 +1517,194 @@ footer{background:var(--ink);}
 <!-- ═══════════ JAVASCRIPT ═══════════ -->
 
 <!-- ═══════════ JAVASCRIPT ═══════════ -->
+<script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
 <script>
-
-// ══════════════════════════════════════════
-//  NAV SCROLL & ACTIVE HIGHLIGHT
-// ══════════════════════════════════════════
-var sections = ["s-content","s-assess","s-scimath","s-free","s-arabic","s-strategy","s-prompts","s-compare","s-tips","s-quickstart","s-contact"];
+/* ════════════════════════════════════════
+   NAV — Active highlight + smooth scroll
+════════════════════════════════════════ */
+var sections = ["s-content","s-assess","s-scimath","s-free","s-arabic",
+                "s-strategy","s-prompts","s-compare","s-tips","s-quickstart","s-contact"];
 var navBtns  = document.querySelectorAll(".topnav-btn[data-target]");
 var NAV_H    = 70;
 
-function navTo(id) {
-  var el = document.getElementById(id);
-  if (!el) return;
-  var top = el.getBoundingClientRect().top + window.pageYOffset - NAV_H;
-  window.scrollTo({top:top, behavior:"smooth"});
+function navTo(id){
+  var el=document.getElementById(id); if(!el) return;
+  window.scrollTo({top:el.getBoundingClientRect().top+window.pageYOffset-NAV_H,behavior:"smooth"});
 }
-navBtns.forEach(function(btn){
-  btn.addEventListener("click", function(){ navTo(this.getAttribute("data-target")); });
+navBtns.forEach(function(b){ b.addEventListener("click",function(){ navTo(b.getAttribute("data-target")); }); });
+
+function updateActiveNav(){
+  var y=window.pageYOffset+NAV_H+40, cur="";
+  sections.forEach(function(id){ var el=document.getElementById(id); if(el&&el.offsetTop<=y) cur=id; });
+  navBtns.forEach(function(b){ b.classList.toggle("active",b.getAttribute("data-target")===cur); });
+  var bt=document.getElementById("backTop");
+  if(bt){ window.pageYOffset>400?bt.classList.add("show"):bt.classList.remove("show"); }
+}
+window.addEventListener("scroll",updateActiveNav,{passive:true});
+
+/* ════════════════════════════════════════
+   MOBILE DRAWER
+════════════════════════════════════════ */
+var _dOpen=false;
+function toggleDrawer(){
+  _dOpen=!_dOpen;
+  var d=document.getElementById("drawer"), h=document.getElementById("hamburger");
+  if(_dOpen){ d.classList.add("open"); d.style.display="flex"; h.classList.add("open"); document.body.style.overflow="hidden"; }
+  else       { d.classList.remove("open"); h.classList.remove("open"); document.body.style.overflow=""; }
+}
+function goTo(btn){ var id=btn.getAttribute("data-target"); toggleDrawer(); setTimeout(function(){ navTo(id); },320); }
+document.addEventListener("click",function(e){
+  if(!_dOpen) return;
+  var d=document.getElementById("drawer"),h=document.getElementById("hamburger");
+  if(!d.contains(e.target)&&!h.contains(e.target)) toggleDrawer();
 });
 
-function updateActiveNav() {
-  var scrollY = window.pageYOffset + NAV_H + 40;
-  var current = "";
-  sections.forEach(function(id){
-    var el = document.getElementById(id);
-    if (el && el.offsetTop <= scrollY) current = id;
-  });
-  navBtns.forEach(function(btn){
-    btn.classList.toggle("active", btn.getAttribute("data-target") === current);
-  });
-  var bt = document.getElementById("backTop");
-  if (bt) { if (window.pageYOffset > 400) bt.classList.add("show"); else bt.classList.remove("show"); }
-}
-window.addEventListener("scroll", updateActiveNav, {passive:true});
-
-// ══════════════════════════════════════════
-//  MOBILE DRAWER
-// ══════════════════════════════════════════
-var drawerOpen = false;
-function toggleDrawer() {
-  drawerOpen = !drawerOpen;
-  var d = document.getElementById("drawer");
-  var h = document.getElementById("hamburger");
-  if (drawerOpen) {
-    d.classList.add("open"); d.style.display="flex";
-    h.classList.add("open"); document.body.style.overflow="hidden";
-  } else {
-    d.classList.remove("open"); h.classList.remove("open");
-    document.body.style.overflow="";
-  }
-}
-function goTo(btn) {
-  var id = btn.getAttribute("data-target");
-  toggleDrawer();
-  setTimeout(function(){ navTo(id); }, 320);
-}
-document.addEventListener("click", function(e){
-  if (!drawerOpen) return;
-  var d = document.getElementById("drawer");
-  var h = document.getElementById("hamburger");
-  if (!d.contains(e.target) && !h.contains(e.target)) toggleDrawer();
-});
-
-// ══════════════════════════════════════════
-//  PROMPT ACCORDION
-// ══════════════════════════════════════════
-function togglePrompt(btn) {
-  var body   = btn.nextElementSibling;
-  var isOpen = body.classList.contains("open");
-  var card   = btn.closest(".card");
+/* ════════════════════════════════════════
+   PROMPT ACCORDION
+════════════════════════════════════════ */
+function togglePrompt(btn){
+  var body=btn.nextElementSibling, open=body.classList.contains("open");
+  var card=btn.closest(".card");
   card.querySelectorAll(".prompt-body.open").forEach(function(b){ b.classList.remove("open"); });
   card.querySelectorAll(".prompt-toggle.expanded").forEach(function(b){ b.classList.remove("expanded"); });
-  if (!isOpen) { body.classList.add("open"); btn.classList.add("expanded"); }
+  if(!open){ body.classList.add("open"); btn.classList.add("expanded"); }
 }
 
-// ══════════════════════════════════════════
-//  TOAST
-// ══════════════════════════════════════════
-function showToast(msg) {
-  var t = document.getElementById("toast");
-  t.textContent = msg || "تم!";
-  t.classList.add("show");
-  setTimeout(function(){ t.classList.remove("show"); }, 2200);
+/* ════════════════════════════════════════
+   TOAST
+════════════════════════════════════════ */
+function showToast(msg){
+  var t=document.getElementById("toast");
+  t.textContent=msg||"تم!"; t.classList.add("show");
+  setTimeout(function(){ t.classList.remove("show"); },2200);
 }
 
-// ══════════════════════════════════════════
-//  COPY PROMPT
-// ══════════════════════════════════════════
-function copyPrompt(btn) {
-  var clone = btn.parentElement.cloneNode(true);
-  var cb = clone.querySelector(".copy-btn"); if(cb) cb.remove();
-  var str = clone.innerText.trim();
-  if (navigator.clipboard) {
-    navigator.clipboard.writeText(str).then(function(){
-      btn.textContent="✓"; btn.classList.add("copied");
-      showToast("تم نسخ الـ Prompt!");
-      setTimeout(function(){ btn.textContent="نسخ"; btn.classList.remove("copied"); }, 2000);
-    });
-  } else { fallbackCopy(str); showToast("تم النسخ!"); }
+/* ════════════════════════════════════════
+   COPY PROMPT
+════════════════════════════════════════ */
+function copyPrompt(btn){
+  var c=btn.parentElement.cloneNode(true);
+  var x=c.querySelector(".copy-btn"); if(x) x.remove();
+  var s=c.innerText.trim();
+  if(navigator.clipboard){ navigator.clipboard.writeText(s).then(function(){
+    btn.textContent="✓"; btn.classList.add("copied"); showToast("تم نسخ الـ Prompt!");
+    setTimeout(function(){ btn.textContent="نسخ"; btn.classList.remove("copied"); },2000);
+  }); } else { _fbCopy(s); showToast("تم النسخ!"); }
 }
-function copyText(btn) {
-  var clone = btn.parentElement.cloneNode(true);
-  var cb = clone.querySelector(".pcat-copy"); if(cb) cb.remove();
-  var str = clone.innerText.trim();
-  if (navigator.clipboard) {
-    navigator.clipboard.writeText(str).then(function(){
-      btn.textContent="✓ تم"; btn.classList.add("done");
-      showToast("تم نسخ الـ Prompt!");
-      setTimeout(function(){ btn.textContent="نسخ"; btn.classList.remove("done"); }, 2000);
-    });
-  } else { fallbackCopy(str); showToast("تم النسخ!"); }
+function copyText(btn){
+  var c=btn.parentElement.cloneNode(true);
+  var x=c.querySelector(".pcat-copy"); if(x) x.remove();
+  var s=c.innerText.trim();
+  if(navigator.clipboard){ navigator.clipboard.writeText(s).then(function(){
+    btn.textContent="✓ تم"; btn.classList.add("done"); showToast("تم نسخ الـ Prompt!");
+    setTimeout(function(){ btn.textContent="نسخ"; btn.classList.remove("done"); },2000);
+  }); } else { _fbCopy(s); showToast("تم النسخ!"); }
 }
-function fallbackCopy(text) {
-  var ta = document.createElement("textarea");
-  ta.value=text; ta.style.position="fixed"; ta.style.opacity="0";
-  document.body.appendChild(ta); ta.select();
-  document.execCommand("copy"); document.body.removeChild(ta);
+function _fbCopy(t){
+  var ta=document.createElement("textarea"); ta.value=t;
+  ta.style.cssText="position:fixed;opacity:0;top:0;right:0;";
+  document.body.appendChild(ta); ta.select(); document.execCommand("copy"); document.body.removeChild(ta);
 }
 
-// ══════════════════════════════════════════
-//  SEARCH
-// ══════════════════════════════════════════
-function doSearch(val) {
-  var q = val.trim().toLowerCase();
-  document.getElementById("searchClear").style.display = q ? "block" : "none";
-  var found = 0;
+/* ════════════════════════════════════════
+   SEARCH
+════════════════════════════════════════ */
+function doSearch(val){
+  var q=val.trim().toLowerCase();
+  document.getElementById("searchClear").style.display=q?"block":"none";
+  var found=0;
   document.querySelectorAll(".searchable").forEach(function(card){
-    var name = (card.getAttribute("data-name")||"").toLowerCase();
-    var tags = (card.getAttribute("data-tags")||"").toLowerCase();
-    var desc = ((card.querySelector(".card-desc")||{}).innerText||"").toLowerCase();
-    var match = !q || name.includes(q) || tags.includes(q) || desc.includes(q);
-    card.style.display = match ? "" : "none";
-    if (match) found++;
+    var n=(card.getAttribute("data-name")||"").toLowerCase();
+    var t=(card.getAttribute("data-tags")||"").toLowerCase();
+    var d=((card.querySelector(".card-desc")||{}).innerText||"").toLowerCase();
+    var ok=!q||n.includes(q)||t.includes(q)||d.includes(q);
+    card.style.display=ok?"":"none"; if(ok) found++;
   });
-  if (q && found===0) showToast("لا توجد نتائج لـ: " + val);
+  if(q&&found===0) showToast("لا توجد نتائج لـ: "+val);
 }
-function clearSearch() {
-  document.getElementById("searchInput").value = "";
-  doSearch("");
+function clearSearch(){
+  document.getElementById("searchInput").value=""; doSearch("");
 }
 
-// ══════════════════════════════════════════
-//  VISITOR COUNTER  (CountAPI — no Cloudflare)
-// ══════════════════════════════════════════
+/* ════════════════════════════════════════
+   VISITOR COUNTER
+════════════════════════════════════════ */
 (function(){
-  var NS  = "mkm-guide";
-  var KEY = "ai-teachers-2026";
-  var visited = sessionStorage.getItem("v_done");
+  var NS="mkm-guide2", KEY="ai-teachers-2026";
+  var done=sessionStorage.getItem("v_done");
 
-  function animateNum(el, end) {
-    if (!el) return;
-    var start = Math.max(0, end - 60);
-    var timer = setInterval(function(){
-      start = Math.min(start+2, end);
-      el.textContent = start.toLocaleString("ar-EG");
-      if (start >= end) clearInterval(timer);
-    }, 20);
+  function anim(id, end){
+    var el=document.getElementById(id); if(!el||!end) return;
+    var n=Math.max(0,end-60), timer=setInterval(function(){
+      n=Math.min(n+2,end); el.textContent=n.toLocaleString("ar-EG");
+      if(n>=end) clearInterval(timer);
+    },20);
   }
-
-  function fallbackLocal() {
-    var n = parseInt(localStorage.getItem("guide_v")||"0")+1;
-    localStorage.setItem("guide_v", n);
-    animateNum(document.getElementById("visitorNum"), n);
-    animateNum(document.getElementById("myVisitNum"), n);
+  function local(){
+    var n=parseInt(localStorage.getItem("gv")||"0")+1;
+    localStorage.setItem("gv",n); anim("visitorNum",n); anim("myVisitNum",n);
   }
-
-  var url = visited
-    ? "https://api.countapi.xyz/get/"  + NS + "/" + KEY
-    : "https://api.countapi.xyz/hit/"  + NS + "/" + KEY;
-
-  fetch(url)
-    .then(function(r){ return r.json(); })
-    .then(function(d){
-      if (!d || !d.value) { fallbackLocal(); return; }
-      animateNum(document.getElementById("visitorNum"), d.value);
-      if (!visited) {
-        animateNum(document.getElementById("myVisitNum"), d.value);
-        sessionStorage.setItem("v_done","1");
-        sessionStorage.setItem("v_num", d.value);
-      } else {
-        var my = sessionStorage.getItem("v_num")||d.value;
-        animateNum(document.getElementById("myVisitNum"), parseInt(my));
-      }
-    })
-    .catch(fallbackLocal);
+  var url=(done
+    ?"https://api.countapi.xyz/get/"+NS+"/"+KEY
+    :"https://api.countapi.xyz/hit/"+NS+"/"+KEY);
+  fetch(url).then(function(r){ return r.json(); }).then(function(d){
+    if(!d||!d.value){ local(); return; }
+    anim("visitorNum",d.value);
+    if(!done){ anim("myVisitNum",d.value); sessionStorage.setItem("v_done","1"); sessionStorage.setItem("v_n",d.value); }
+    else      { anim("myVisitNum",parseInt(sessionStorage.getItem("v_n")||d.value)); }
+  }).catch(local);
 })();
 
-// ══════════════════════════════════════════
-//  CONTACT MODAL
-// ══════════════════════════════════════════
-function openModal() {
+/* ════════════════════════════════════════
+   CONTACT MODAL
+════════════════════════════════════════ */
+function openModal(){
   document.getElementById("contactModal").classList.add("open");
   document.body.style.overflow="hidden";
 }
-function closeModal() {
+function closeModal(){
   document.getElementById("contactModal").classList.remove("open");
   document.body.style.overflow="";
 }
-document.getElementById("contactModal").addEventListener("click", function(e){
-  if (e.target===this) closeModal();
-});
+var _cm=document.getElementById("contactModal");
+if(_cm) _cm.addEventListener("click",function(e){ if(e.target===this) closeModal(); });
 
-// ══════════════════════════════════════════
-//  EMAILJS — الحل الوحيد بدون حجب
-// ══════════════════════════════════════════
-var EJS = {
-  publicKey : "REPLACE_PUBLIC_KEY",   // ← من emailjs.com
-  serviceID : "REPLACE_SERVICE_ID",   // ← من emailjs.com
-  templateID: "REPLACE_TEMPLATE_ID"   // ← من emailjs.com
-};
+/* ════════════════════════════════════════
+   EMAIL — Web3Forms (يصل مباشرة لـ Gmail)
+   مجاني 250 رسالة/شهر — لا Cloudflare block
+   المفتاح خاص بـ Engmkm2023@gmail.com
+════════════════════════════════════════ */
+/* ════════════════════════════════════════════════════
+   خطوة واحدة لتفعيل الإيميل:
+   1. افتح https://web3forms.com
+   2. أدخل: Engmkm2023@gmail.com  واضغط "Get Access Key"
+   3. ستصلك رسالة تأكيد على إيميلك - اضغط Confirm
+   4. انسخ الـ Access Key وضعه مكان 6458e517-e84b-4749-a303-ff95796eb96b
+   ════════════════════════════════════════════════════ */
+var W3F_KEY = "6458e517-e84b-4749-a303-ff95796eb96b"; // ← ضع مفتاحك هنا
 
-function ejsReady() {
-  return typeof emailjs !== "undefined"
-      && EJS.publicKey  !== "REPLACE_PUBLIC_KEY"
-      && EJS.serviceID  !== "REPLACE_SERVICE_ID"
-      && EJS.templateID !== "REPLACE_TEMPLATE_ID";
+function validateEmail(e){ return /^[^@]+@[^@]+[.][^@]+$/.test(e); }
+
+function showStatus(el,type,msg){
+  el.textContent=msg; el.className="form-status "+type; el.style.display="block";
+  if(type==="success") setTimeout(function(){ el.style.display="none"; },5000);
 }
 
-function sendViaEJS(params, onOk, onFail) {
-  if (!ejsReady()) { onFail("not_configured"); return; }
-  emailjs.init(EJS.publicKey);
-  emailjs.send(EJS.serviceID, EJS.templateID, params)
-    .then(function(r){ r.status===200 ? onOk() : onFail(r.text); })
-    .catch(function(e){ onFail(e); });
+function sendW3F(payload, onOk, onFail){
+  payload.access_key = W3F_KEY;
+  payload.botcheck   = "";
+  fetch("https://api.web3forms.com/submit",{
+    method:"POST",
+    headers:{"Content-Type":"application/json","Accept":"application/json"},
+    body:JSON.stringify(payload)
+  })
+  .then(function(r){ return r.json(); })
+  .then(function(d){ d.success ? onOk() : onFail(d.message||"error"); })
+  .catch(function(e){ onFail(e.toString()); });
 }
 
-function validateEmail(e){ return /^[^@]+@[^@]+\.[^@]+$/.test(e); }
-
-function showStatus(el, type, msg){
-  el.textContent = msg;
-  el.className   = "form-status "+type;
-  el.style.display="block";
-  if (type==="success") setTimeout(function(){ el.style.display="none"; },5000);
-}
-
-// ─── MODAL FORM ───
-function submitContact() {
+/* ── MODAL FORM ── */
+function submitContact(){
   var name    = document.getElementById("cf-name").value.trim();
   var email   = document.getElementById("cf-email").value.trim();
   var subject = document.getElementById("cf-subject").value;
@@ -1714,54 +1712,54 @@ function submitContact() {
   var status  = document.getElementById("cf-status");
   var btn     = document.getElementById("cf-submit");
 
-  if (!name)                         { showStatus(status,"error","⚠️ الرجاء إدخال اسمك"); return; }
-  if (!email||!validateEmail(email)) { showStatus(status,"error","⚠️ الرجاء إدخال بريد إلكتروني صحيح"); return; }
-  if (!message)                      { showStatus(status,"error","⚠️ الرجاء كتابة رسالتك"); return; }
+  if(!name)                          { showStatus(status,"error","⚠️ الرجاء إدخال اسمك"); return; }
+  if(!email||!validateEmail(email))  { showStatus(status,"error","⚠️ الرجاء إدخال بريد إلكتروني صحيح"); return; }
+  if(!message)                       { showStatus(status,"error","⚠️ الرجاء كتابة رسالتك"); return; }
 
   btn.disabled=true; btn.textContent="⏳ جاري الإرسال...";
 
-  sendViaEJS(
-    { from_name:name, reply_to:email, subject:subject, message:message },
+  sendW3F(
+    { name:name, email:email, subject:"[دليل AI للمعلمين] "+subject, message:message },
     function(){
-      showStatus(status,"success","✅ وصلت رسالتك! سيتم الرد خلال 24-48 ساعة");
+      showStatus(status,"success","✅ وصلت رسالتك بنجاح! سيتم الرد خلال 24-48 ساعة");
       btn.textContent="✅ تم الإرسال";
       ["cf-name","cf-email","cf-message"].forEach(function(id){ document.getElementById(id).value=""; });
       setTimeout(function(){ closeModal(); btn.textContent="إرسال الرسالة ✈️"; btn.disabled=false; },3000);
     },
     function(err){
-      if (err==="not_configured") {
-        showStatus(status,"error","⚙️ الخدمة قيد الإعداد — تواصل عبر Facebook أو WhatsApp مؤقتاً");
+      if(err==="key_missing"){
+        showStatus(status,"error","⚙️ يحتاج إعداد بسيط — راجع الشريط الأحمر في الأعلى للتعليمات");
       } else {
-        showStatus(status,"error","❌ تعذّر الإرسال — حاول مرة أخرى أو تواصل عبر Facebook");
+        showStatus(status,"error","❌ تعذّر الإرسال — تواصل عبر Facebook مؤقتاً");
       }
       btn.textContent="إرسال الرسالة ✈️"; btn.disabled=false;
     }
   );
 }
 
-// ─── MINI FORM ───
-function submitMiniContact() {
+/* ── MINI FORM ── */
+function submitMiniContact(){
   var name   = document.getElementById("mc-name").value.trim();
   var email  = document.getElementById("mc-email").value.trim();
   var msg    = document.getElementById("mc-msg").value.trim();
   var status = document.getElementById("mc-status");
   var btn    = document.getElementById("mc-btn");
 
-  if (!name||!email||!msg)    { showStatus(status,"error","⚠️ يرجى ملء جميع الحقول"); return; }
-  if (!validateEmail(email))  { showStatus(status,"error","⚠️ البريد الإلكتروني غير صحيح"); return; }
+  if(!name||!email||!msg)   { showStatus(status,"error","⚠️ يرجى ملء جميع الحقول"); return; }
+  if(!validateEmail(email)) { showStatus(status,"error","⚠️ البريد الإلكتروني غير صحيح"); return; }
 
   btn.disabled=true; btn.textContent="⏳ جاري الإرسال...";
 
-  sendViaEJS(
-    { from_name:name, reply_to:email, subject:"رسالة سريعة من الدليل", message:msg },
+  sendW3F(
+    { name:name, email:email, subject:"[دليل AI للمعلمين] رسالة سريعة", message:msg },
     function(){
       showStatus(status,"success","✅ وصلت رسالتك! شكراً لتواصلك مع المهندس ميثم");
       ["mc-name","mc-email","mc-msg"].forEach(function(id){ document.getElementById(id).value=""; });
       btn.textContent="إرسال ✈️"; btn.disabled=false;
     },
     function(err){
-      if (err==="not_configured") {
-        showStatus(status,"error","⚙️ الخدمة قيد الإعداد — تواصل عبر Facebook مؤقتاً");
+      if(err==="key_missing"){
+        showStatus(status,"error","⚙️ يحتاج إعداد بسيط — راجع الشريط الأحمر في الأعلى");
       } else {
         showStatus(status,"error","❌ تعذّر الإرسال — تواصل عبر Facebook");
       }
@@ -1770,10 +1768,17 @@ function submitMiniContact() {
   );
 }
 
-// ── INIT ──
+/* ── INIT ── */
 updateActiveNav();
-
+// Hide setup banner if key is configured or user dismissed
+(function(){
+  var sb=document.getElementById("setupBanner");
+  if(sb){
+    if(W3F_KEY!=="6458e517-e84b-4749-a303-ff95796eb96b"||localStorage.getItem("sb_closed")==="1"){
+      sb.classList.add("hidden");
+    }
+  }
+})();
 </script>
-
 </body>
 </html>
